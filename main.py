@@ -17,7 +17,3 @@ print("ID: " + str(user.id))
 print("Public repos: " + str(user.public_repos))
 print("Private repos: " + str(user.total_private_repos))
 
-
-
-
-

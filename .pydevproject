@@ -7,5 +7,6 @@
 <pydev_property name="org.python.pydev.PYTHON_PROJECT_INTERPRETER">Default</pydev_property>
 <pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
 <path>C:\Users\Aaron\Lib\site-packages</path>
+<path>C:\Users\Aaron\Lib\site-packages\PyGithub-1.43.3-py3.7.egg-info</path>
 </pydev_pathproperty>
 </pydev_project>

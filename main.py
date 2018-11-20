@@ -1,7 +1,9 @@
 from github import Github
 import pandas
+import matplotlib.pyplot as plt
+import numpy as np
 
-MAX_ROWS = 50
+MAX_ROWS = 25
 REPO_FOLL_COLUMNS = 2
 
 token = input('access token --> ')
@@ -33,3 +35,5 @@ def repoFoll(username, prev):
 print("Interrogating API, this may take a few seconds...")
 repoFoll(username = user.login, prev = [])
 print(df)
+df.plot(x='Repos', y='Followers', style= 'o')
+plt.show()

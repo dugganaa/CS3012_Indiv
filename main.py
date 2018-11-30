@@ -4,24 +4,37 @@ import pandas
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+from scipy import stats
 
-DEFAULT_MAX_ROWS = 20
-max_rows = 10
+DEFAULT_MAX_ROWS = 10
 REPO_FOLL_COLUMNS = 2
 FOLL_NODE_LISTS = 2
 
 class repoFollowers:
 
-    def __init__(self, username, g, rows):
+    def __init__(self, username, g, rows, clean):
         self.username = username
         self.g = g
         self.prev = []
         self.df = pandas.DataFrame(columns=['Repos', 'Followers'])
         self.currentPerc = 0
         self.rows = rows
+        self.clean = clean
 
     def returnDf(self):
+        if self.clean:
+            print("test")
+            self.cleanData()
         return self.df
+
+
+    def cleanData(self):
+        q1 = self.df['Followers'].quantile(0.25)
+        q3 = self.df['Followers'].quantile(0.75)
+        iqr = q3 - q1
+        fence_low = q1-1.5*iqr
+        fence_high = q3+1.5*iqr
+        self.df = self.df.loc[(self.df['Followers'] > fence_low) & (self.df['Followers'] < fence_high)]
 
     def inter(self):
         currentUser = self.g.get_user(self.username)
@@ -99,44 +112,56 @@ class followersNetwork():
 
 
 successfulLogin = False
-
 for attempts in range(10):
-    try:
-        token = input('Input your access token to begin--> ')
-        g = Github(str(token))
-        user = g.get_user()
-        print("Hello {}, use the following commands to interrogate".format(user.name),
-            "the Github API and display the data.")
-    except:
-        print("Error: Bad Credentials. You inputted '{}'".format(str(token)))
-    else:
-        successfulLogin = True
-        break
-
-if successfulLogin:
-    for x in sys.stdin:
-        args = x.split(" ")
-
-        if len(args) == 1:
-            args.append(DEFAULT_MAX_ROWS)
-
-        if len(args) == 0:
-            print("You must input something!")
-
-        if args[0] == "quit\n" or args[0].lower() == "exit\n":
-            print("Stopping program.")
-            break
-        elif args[0] == "fr":
-            p = repoFollowers(user.login,g,int(args[1]))
-            p.inter()
-            df = p.returnDf()
-            df.plot(x='Repos', y='Followers', style='o')
-            plt.show()
-        elif args[0] == 'fg':
-            p = followersNetwork(user.login,g, int(args[1]))
-            p.inter()
-            g = p.returnG()
-            nx.draw(g, with_labels=True)
-            plt.show()
+    if not successfulLogin:
+        try:
+            token = input('Input your access token to begin--> ')
+            g = Github(str(token))
+            user = g.get_user()
+            print("Hello {}, use the following commands to interrogate".format(user.name),
+                "the Github API and display the data. Type 'quit' to stop the program.",
+                "\n\n-Followers vs Repos Graph:",
+                "\nfr <row_size> <clean>",
+                "\n\n-Followers Network Graph",
+                "\nfg <row_size>")
+        except:
+            print("Error: Bad Credentials. You inputted '{}'".format(str(token)))
         else:
-             print("Error: command not found.")
+            successfulLogin = True
+            for x in sys.stdin:
+                args = x.split(" ")
+
+                if len(args) == 1:
+                    if args[0] == "fr\n":
+                        args[0] = "fr"
+                    elif args[0] == "fg\n":
+                        args[0] = "fg"
+                    args.append(DEFAULT_MAX_ROWS)
+
+                if len(args) == 0:
+                    print("You must input something!")
+
+                if args[0] == "quit\n" or args[0].lower() == "exit\n":
+                    print("Stopping program.")
+                    break
+                elif args[0] == "fr":
+                    clean = False
+                    if len(args) == 3:
+                        if args[2] == "cl\n":
+                            clean = True
+                    p = repoFollowers(user.login,g,int(args[1]),clean)
+                    p.inter()
+                    df = p.returnDf()
+                    df.plot(x='Repos', y='Followers', style='o')
+                    plt.show()
+                elif args[0] == 'fg':
+                    p = followersNetwork(user.login,g, int(args[1]))
+                    p.inter()
+                    g = p.returnG()
+                    nx.draw(g, with_labels=True)
+                    plt.show()
+                else:
+                     print("Error: command not found.")
+
+if not successfulLogin:
+    print("Too many login attempts. Stopping program.")

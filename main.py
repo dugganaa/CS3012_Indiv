@@ -10,6 +10,12 @@ DEFAULT_MAX_ROWS = 10
 REPO_FOLL_COLUMNS = 2
 FOLL_NODE_LISTS = 2
 
+#
+# Creates and displays a dataframe of Repos vs followers
+# Begins by searching through the followers of the
+# currently logged in user
+#
+
 class repoFollowers:
 
     def __init__(self, username, g, rows, clean):
@@ -23,7 +29,6 @@ class repoFollowers:
 
     def returnDf(self):
         if self.clean:
-            print("test")
             self.cleanData()
         return self.df
 
@@ -62,6 +67,11 @@ class repoFollowers:
         return False
 
 
+
+#
+# Creates a display of the network between followers
+# Two nodes are connected if either follows the other
+#
 class followersNetwork():
     def __init__(self, username, g, rows):
         self.username = username
@@ -111,11 +121,14 @@ class followersNetwork():
         return False
 
 
-successfulLogin = False
+termProg = False
 for attempts in range(10):
-    if not successfulLogin:
+    if not termProg:
         try:
             token = input('Input your access token to begin--> ')
+            if token == "quit" or token == "exit":
+                termProg = True
+                break
             g = Github(str(token))
             user = g.get_user()
             print("Hello {}, use the following commands to interrogate".format(user.name),
@@ -127,7 +140,7 @@ for attempts in range(10):
         except:
             print("Error: Bad Credentials. You inputted '{}'".format(str(token)))
         else:
-            successfulLogin = True
+            termProg = True
             for x in sys.stdin:
                 args = x.split(" ")
 
@@ -152,16 +165,20 @@ for attempts in range(10):
                     p = repoFollowers(user.login,g,int(args[1]),clean)
                     p.inter()
                     df = p.returnDf()
+                    print("100% complete",
+                        "\nScatter plot drawn.\n")
                     df.plot(x='Repos', y='Followers', style='o')
                     plt.show()
                 elif args[0] == 'fg':
                     p = followersNetwork(user.login,g, int(args[1]))
                     p.inter()
                     g = p.returnG()
+                    print("100% complete",
+                        "\nGraph drawn.\n")
                     nx.draw(g, with_labels=True)
                     plt.show()
                 else:
                      print("Error: command not found.")
 
-if not successfulLogin:
+if not termProg:
     print("Too many login attempts. Stopping program.")

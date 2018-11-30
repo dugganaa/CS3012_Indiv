@@ -147,7 +147,7 @@ for attempts in range(10):
                 elif args[0] == "fr":
                     clean = False
                     if len(args) == 3:
-                        if args[2] == "cl\n":
+                        if args[2] == "-cl\n":
                             clean = True
                     p = repoFollowers(user.login,g,int(args[1]),clean)
                     p.inter()

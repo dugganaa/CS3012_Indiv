@@ -25,13 +25,13 @@ cl   = clean code. Used to remove outliers.
 
 ```
 
-fr -rows -cl
+fr <rows> [cl]
 
 ```
 
 ```
 
-fg -rows
+fg <rows>
 
 ```
   
